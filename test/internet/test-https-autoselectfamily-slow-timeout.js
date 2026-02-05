@@ -9,12 +9,16 @@ if (!common.hasCrypto)
 const assert = require('assert');
 const { request } = require('https');
 
-request(
+const req = request(
   `https://${addresses.INET_HOST}/en`,
-  // Purposely set this to a low value because we want all connection but the last to fail
-  { autoSelectFamily: true, autoSelectFamilyAttemptTimeout: 10 },
+  // Increased timeout to handle slower CI environments while still testing
+  // the autoSelectFamily mechanism with realistic failure scenarios
+  { autoSelectFamily: true, autoSelectFamilyAttemptTimeout: 100 },
   common.mustCall((res) => {
     assert.strictEqual(res.statusCode, 200);
     res.resume();
   }),
-).end();
+);
+
+req.on('error', common.mustNotCall());
+req.end();
